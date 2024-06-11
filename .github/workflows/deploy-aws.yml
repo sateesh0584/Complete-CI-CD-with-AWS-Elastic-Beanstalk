@@ -1,22 +1,23 @@
-name: Deploy React to AWS
+name: Deploy to AWS Elastic Beanstalk
+
 on:
   push:
     branches:
-      - "main"
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout source code
-        uses: actions/checkout@v2 
+        uses: actions/checkout@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
       - name: Build Docker image
-        run: |
-          docker build -t my-react-app -f Dockerfile .
+        run: docker build -t my-nginx-app .
 
       - name: Install AWS CLI
         run: |

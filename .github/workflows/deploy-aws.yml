@@ -1,4 +1,4 @@
-name: Deploy to AWS Elastic Beanstalk
+name: Deploy Nginx to AWS Elastic Beanstalk
 
 on:
   push:
@@ -17,7 +17,8 @@ jobs:
         uses: docker/setup-buildx-action@v2
 
       - name: Build Docker image
-        run: docker build -t my-nginx-app .
+        run: |
+          docker build -t my-nginx-app .
 
       - name: Install AWS CLI
         run: |

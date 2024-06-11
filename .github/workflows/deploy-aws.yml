@@ -56,5 +56,5 @@ jobs:
       - name: Update Elastic Beanstalk environment
         run: |
           aws elasticbeanstalk update-environment \
-            --environment-name Docker-react-env \
+            --environment-name Docker-react-env-1 \
             --version-label ${{ github.sha }}

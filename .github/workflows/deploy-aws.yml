@@ -48,7 +48,7 @@ jobs:
 
       - name: Wait for Elastic Beanstalk environment to be ready
         run: |
-          while [[ $(aws elasticbeanstalk describe-environments --environment-names Docker-react-env --query "Environments[0].Status" --output text) != "Ready" ]]; do
+          while [[ $(aws elasticbeanstalk describe-environments --environment-names Docker-react-env-1 --query "Environments[0].Status" --output text) != "Ready" ]]; do
             echo "Waiting for environment to be ready..."
             sleep 30
           done

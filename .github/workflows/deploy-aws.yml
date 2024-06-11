@@ -35,12 +35,19 @@ jobs:
         run: |
           zip -r deploy.zip . -x '*.git*' -x 'node_modules/*'
 
-      - name: Deploy to Elastic Beanstalk
+      - name: Upload deployment package to S3
+        run: |
+          aws s3 cp deploy.zip s3://${{ secrets.S3_BUCKET }}/docker-react/${{ github.sha }}.zip
+
+      - name: Create new Elastic Beanstalk application version
         run: |
           aws elasticbeanstalk create-application-version \
             --application-name docker-react \
             --version-label ${{ github.sha }} \
             --source-bundle S3Bucket=${{ secrets.S3_BUCKET }},S3Key=docker-react/${{ github.sha }}.zip
+
+      - name: Update Elastic Beanstalk environment
+        run: |
           aws elasticbeanstalk update-environment \
             --environment-name Docker-react-env \
             --version-label ${{ github.sha }}

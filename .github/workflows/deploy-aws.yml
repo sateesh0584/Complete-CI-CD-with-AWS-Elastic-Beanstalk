@@ -32,7 +32,7 @@ jobs:
           aws configure set default.region us-east-2
 
       - name: Create deployment package
-        run: | 
+        run: |
           zip -r deploy.zip . -x '*.git*' -x 'node_modules/*'
 
       - name: Upload deployment package to S3
@@ -45,6 +45,13 @@ jobs:
             --application-name docker-react \
             --version-label ${{ github.sha }} \
             --source-bundle S3Bucket=${{ secrets.S3_BUCKET }},S3Key=docker-react/${{ github.sha }}.zip
+
+      - name: Wait for Elastic Beanstalk environment to be ready
+        run: |
+          while [[ $(aws elasticbeanstalk describe-environments --environment-names Docker-react-env --query "Environments[0].Status" --output text) != "Ready" ]]; do
+            echo "Waiting for environment to be ready..."
+            sleep 30
+          done
 
       - name: Update Elastic Beanstalk environment
         run: |

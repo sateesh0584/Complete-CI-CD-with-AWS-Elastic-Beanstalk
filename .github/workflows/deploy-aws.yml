@@ -32,7 +32,7 @@ jobs:
           aws configure set default.region us-east-2
 
       - name: Create deployment package
-        run: |
+        run: | 
           zip -r deploy.zip . -x '*.git*' -x 'node_modules/*'
 
       - name: Upload deployment package to S3

@@ -14,17 +14,9 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
-      - name: Log in to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
-
-      - name: Build, tag, and push Docker image
-        env:
-          ECR_REGISTRY: ${{ secrets.ECR_REGISTRY }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          IMAGE_TAG: ${{ github.sha }}
+      - name: Build Docker image
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker build -t my-react-app .
 
       - name: Install AWS CLI
         run: |
@@ -39,33 +31,16 @@ jobs:
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws configure set default.region us-east-2
 
-      - name: Prepare Dockerrun.aws.json
-        run: |
-          echo '{
-            "AWSEBDockerrunVersion": "1",
-            "Image": {
-              "Name": "${{ secrets.ECR_REGISTRY }}/${{ secrets.ECR_REPOSITORY }}:${{ github.sha }}",
-              "Update": "true"
-            },
-            "Ports": [
-              {
-                "ContainerPort": "80"
-              }
-            ]
-          }' > Dockerrun.aws.json
-
       - name: Create deployment package
         run: |
-          zip -r deploy.zip Dockerrun.aws.json docker-compose.yml .ebextensions .platform
+          zip -r deploy.zip . -x '*.git*' -x 'node_modules/*'
 
       - name: Deploy to Elastic Beanstalk
-        uses: einaregilsson/beanstalk-deploy@v21
-        with:
-          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          application_name: docker-react
-          environment_name: Docker-react-env
-          version_label: ${{ github.sha }}
-          existing_bucket_name: elasticbeanstalk-us-east-2-187392167468
-          region: us-east-2 
-          deployment_package: deploy.zip
+        run: |
+          aws elasticbeanstalk create-application-version \
+            --application-name docker-react \
+            --version-label ${{ github.sha }} \
+            --source-bundle S3Bucket=${{ secrets.S3_BUCKET }},S3Key=docker-react/${{ github.sha }}.zip
+          aws elasticbeanstalk update-environment \
+            --environment-name Docker-react-env \
+            --version-label ${{ github.sha }}
